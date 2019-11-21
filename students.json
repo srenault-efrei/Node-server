@@ -1,17 +1,37 @@
 [
     {
-        "name": "hol",
-        "school": "bimo",
+        "name": "Steven",
+        "school": "Efrei",
         "id": 1
     },
     {
-        "name": "hol",
-        "school": "bimo",
+        "name": "Steven",
+        "school": "Efrei",
         "id": 2
     },
     {
-        "name": "hol",
-        "school": "bimo",
-        "id": 4
+        "name": "Steven",
+        "school": "Efrei",
+        "id": 3
+    },
+    {
+        "name": "Steven",
+        "school": "Efrei",
+        "id": 6
+    },
+    {
+        "name": "Steven",
+        "school": "Efrei",
+        "id": 7
+    },
+    {
+        "name": "Steven",
+        "school": "Efrei",
+        "id": 8
+    },
+    {
+        "name": "Steven",
+        "school": "Efrei",
+        "id": 9
     }
 ]
