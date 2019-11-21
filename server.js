@@ -17,7 +17,7 @@ else {
         const { pathname, query } = url.parse(request_url, true)
 
         /* -------------------------GET------------------------*/
-        
+
         if (req.method == 'GET') {
             if (pathname === '/') {
                 const { name } = query
@@ -48,81 +48,44 @@ else {
                         data = [user] // tableau de user 
                         //console.log(data)
                     } else {
-                        const json = require(`./${LOCAL_DATABASE}`) //on lit et parse en string
+                        const json = require(`./${LOCAL_DATABASE}`) // ON LIT ET PARSE EN STRING
+                        // IL FAUT GERER LERREUR QUAND ON DELETE ET POST POUR NE PAS Q'UN USER A MM ID QU'UN AUTRE
                         user.id = json.length + 1
                         json.push(user)
                         data = json
                     }
                     fs.writeFileSync(LOCAL_DATABASE, JSON.stringify(data, null, 4))
-
+                    console.log("L'utilisateur avec l'id " + user.id + " a bien été crée")
 
                 })
-                // 1 get DATA
-                // 2 file System Management 
             }
         }
 
-      
+
         /* -------------------------PUT------------------------*/
 
         if (req.method == 'PUT') {
-            let putId = pathname.split('/')
-            putId = putId[2]
-
+            let splitPathname = pathname.split('/')
+            let putId = splitPathname[2]
+            let matchPut = []
+            let json = ""
             let data = ''
+
             req.on('data', chunk => {
                 data += chunk.toString()
 
             })
+
             req.on('end', () => {
-                // console.log(data)
-                let putNamed = JSON.parse(data)
-                let putName = putNamed.name
-                let putSchool = putNamed.school
-                console.log(typeof putId)
-                putId = parseInt(putId)
+                let putData = JSON.parse(data)
+                let putName = putData.name
+                let putSchool = putData.school
+                let isExist = false
 
-                let json = ""
-                if (typeof putId === 'number') {
-                    if (fs.existsSync(LOCAL_DATABASE)) {
-                        json = require(`./${LOCAL_DATABASE}`) //on lit et parse en string
-                        for (const key in json) {
-                            console.log(json[key])
-                            if (json[key].id == putId) {
-                                if (putName != undefined) {
-                                    json[key].name = putName
-                                }
-                                if (putSchool != undefined) {
-                                    json[key].school = putSchool
-                                }
-                                console.log("La modification a bien été aplliqué")
-                            }
-                        }
-                    } else {
-                        console.log(` le fichier ${LOCAL_DATABASE} ne peut pas etre modifié si il n'existe pas`)
-                    }
-                } else {
-                    console.log("l'id renseigné n'est pas un nombre ")
-                }
-                fs.writeFileSync(LOCAL_DATABASE, JSON.stringify(json, null, 4))
-            })
-        }
+                matchPut = putId.match(/(^[0-9]+$)/g) // ON VERIFIE SI ON MATCH AVEC UN NOMBRE
 
-        /* -------------------------DELETE------------------------*/
-
-        if (req.method == 'DELETE') {
-            let splitPathname = pathname.split('/')
-            let ressource = splitPathname[1]
-            let putId = splitPathname[2]
-            let matchDelete = []
-            let json = ""
-            let globalJson = []
-            let isExist = false
-
-            matchDelete = putId.match(/(^[0-9]+$)/g) // ON VERIFIE SI ON MATCH AVEC UN NOMBRE
-            if (ressource == 'students') { // ON VERIFIE SI LA RESSOURCE EST STUDENTS
-                if (matchDelete != null) { // ON VERIFIE SI IL Y UN NOMBRE
-                    putId = parseInt(matchDelete[0])
+                if (matchPut != null) {// ON VERIFIE SI IL Y UN NOMBRE
+                    putId = parseInt(matchPut[0])
                     if (fs.existsSync(LOCAL_DATABASE)) {
                         json = require(`./${LOCAL_DATABASE}`) //on lit et parse en string
                         //ON VERIFIE SI L'ID EXISTE
@@ -131,28 +94,92 @@ else {
                                 isExist = true
                             }
                         }
-                        // SI IL EXISTE ON VA CHERCHE LA LIGNE A SUPPRIMER
+                        // SI IL EXISTE ON CHERCHE LA LIGNE A MODIFIER
                         if (isExist == true) {
                             for (const key in json) {
-                                if (json[key].id != putId) {
-                                    globalJson.push(json[key]) // ON AJOUTE TOUT LES OBJECTS QUI N'ONT PAS L'ID MENTIONNE
-                                    fs.writeFileSync(LOCAL_DATABASE, JSON.stringify(globalJson, null, 4))
-                                    console.log("l'objet avec l'id " + json[key].id + " a été ajouté")
+                                if (json[key].id == putId) {
+                                    if (putName != undefined) {
+                                        json[key].name = putName
+                                    }
+                                    if (putSchool != undefined) {
+                                        json[key].school = putSchool
+                                    }
+                                    fs.writeFileSync(LOCAL_DATABASE, JSON.stringify(json, null, 4))
+                                    console.log("La modification a bien été aplliqué")
                                 }
                             }
                         } else {
                             console.log("l'id " + putId + " n'existe pas")
                         }
+
                     } else {
                         console.log(` le fichier ${LOCAL_DATABASE} ne peut pas etre modifié si il n'existe pas`)
                     }
                 } else {
                     console.log("l'id renseigné n'est pas un nombre ")
                 }
-            } else {
-                console.log("Votre ressource doit être 'students'")
+
+            })
+        }
+
+        /* -------------------------DELETE------------------------*/
+
+        if (req.method == 'DELETE') {
+
+            let splitPathname = pathname.split('/')
+            let matchDelete = []
+            let json = ""
+            let globalJson = []
+            let isExist = false
+
+            if (splitPathname.length == 3) { // JE VERIFIE SI ON A AU MOINS 2 TRUCS DANS LE TAB (CHAINE VIDE,LA RESSOURCE, L'ID)
+                let ressource = splitPathname[1]
+                let deleteId = splitPathname[2]
+
+                matchDelete = deleteId.match(/(^[0-9]+$)/g) // ON VERIFIE SI ON MATCH AVEC UN NOMBRE
+                if (ressource == 'students') { // ON VERIFIE SI LA RESSOURCE EST STUDENTS
+                    if (matchDelete != null) { // ON VERIFIE SI IL Y UN NOMBRE
+                        deleteId = parseInt(matchDelete[0])
+                        if (fs.existsSync(LOCAL_DATABASE)) {
+                            json = require(`./${LOCAL_DATABASE}`) //on lit et parse en string
+                            //ON VERIFIE SI L'ID EXISTE
+                            for (const k in json) {
+                                if (json[k].id == deleteId) {
+                                    isExist = true
+                                }
+                            }
+                            // SI IL EXISTE ON VA CHERCHE LA LIGNE A SUPPRIMER
+                            if (isExist == true) {
+                                for (const key in json) {
+                                    if (json[key].id != deleteId) {
+                                        globalJson.push(json[key]) // ON AJOUTE TOUT LES OBJECTS QUI N'ONT PAS L'ID MENTIONNE
+                                        fs.writeFileSync(LOCAL_DATABASE, JSON.stringify(globalJson, null, 4))
+                                    }
+                                }
+                                console.log("l'objet avec l'id " + deleteId + " a été supprimé")
+                            } else {
+                                console.log("l'id " + deleteId + " n'existe pas")
+                            }
+                        } else {
+                            console.log(` le fichier ${LOCAL_DATABASE} ne peut pas etre modifié si il n'existe pas`)
+                        }
+                    } else {
+                        console.log("l'id renseigné n'est pas un nombre ")
+                    }
+                } else {
+                    console.log("Votre ressource doit être 'students'")
+                }
+            }
+            // /* -------------------------DELETE_ALL_STUDENT------------------------*/
+
+            else {
+                if (pathname === '/students') {
+                    fs.writeFileSync(LOCAL_DATABASE, JSON.stringify([], null, 4))
+                    console.log("Vous avez supprimé tout les étudiants")
+                }
             }
         }
+
         res.end();
 
     }).listen(port)
