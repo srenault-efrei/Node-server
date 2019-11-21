@@ -110,7 +110,7 @@ else {
             let json = ""
             let globalJson = []
             putId = parseInt(putId)
-    
+       
             if (typeof putId === 'number') {
                 if (fs.existsSync(LOCAL_DATABASE)) {
                     json = require(`./${LOCAL_DATABASE}`) //on lit et parse en string
