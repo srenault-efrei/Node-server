@@ -1,0 +1,15 @@
+## .gitignore generated with love by Mhirba
+##
+# NODE
+##
+# Modules dependencies
+node_modules/
+# Package manager stuff
+yarn-debug.log*
+yarn-error.log*
+yarn.lock
+# Testing
+coverage/
+# by others
+.vscode/
+.DS_Store

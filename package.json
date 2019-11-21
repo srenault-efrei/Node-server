@@ -1,0 +1,14 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "simple server",
+  "main": "server.js",
+  "scripts": {
+    "start": "npx nodemon server.js"
+  },
+  "author": "Steven Renault",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^2.0.0"
+  }
+}
